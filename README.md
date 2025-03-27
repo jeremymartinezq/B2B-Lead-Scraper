@@ -17,6 +17,9 @@ A powerful Chrome extension that automatically scrapes and collects B2B contact 
 - 📊 Real-time statistics
 - ⌨️ Keyboard shortcuts
 
+## Design
+<img width="299" alt="Screenshot 2025-03-26 234052" src="https://github.com/user-attachments/assets/2c67c5b8-3b71-4c8c-a200-99159050657b" />
+
 ## Installation
 
 1. Clone this repository (https://github.com/jeremymartinezq/B2B-Lead-Scraper.git) or download the ZIP file
@@ -90,3 +93,4 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details. 
+
