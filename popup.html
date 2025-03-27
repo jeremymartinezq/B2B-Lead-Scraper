@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>B2B Lead Scraper</title>
+    <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>B2B Lead Scraper</h1>
+            <div class="toggle-container">
+                <label class="switch">
+                    <input type="checkbox" id="scraping-toggle">
+                    <span class="slider round"></span>
+                </label>
+                <span class="toggle-label">Scraping</span>
+            </div>
+            <div class="theme-toggle">
+                <label class="switch">
+                    <input type="checkbox" id="theme-toggle">
+                    <span class="slider round"></span>
+                </label>
+                <span class="toggle-label">Dark Mode</span>
+            </div>
+        </div>
+
+        <div class="stats-container">
+            <div class="stat-item">
+                <span class="stat-label">Leads Collected:</span>
+                <span id="leads-count">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Pages Scanned:</span>
+                <span id="pages-count">0</span>
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <button id="export-csv" class="btn primary">Export to CSV</button>
+            <button id="clear-data" class="btn secondary">Clear Data</button>
+        </div>
+
+        <div class="data-preview">
+            <h2>Recent Leads</h2>
+            <div id="leads-table" class="table-container">
+                <!-- Table will be populated dynamically -->
+            </div>
+        </div>
+    </div>
+    <script src="popup.js"></script>
+</body>
+</html> 

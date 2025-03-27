@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>B2B Lead Scraper CLI</title>
+    <style>
+        body {
+            background-color: #1e1e1e;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            margin: 0;
+            padding: 20px;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        #terminal {
+            flex-grow: 1;
+            background-color: #000;
+            padding: 10px;
+            overflow-y: auto;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            white-space: pre-wrap;
+        }
+        #input-line {
+            display: flex;
+            align-items: center;
+            margin-top: 10px;
+        }
+        #prompt {
+            color: #0f0;
+            margin-right: 10px;
+        }
+        #command-input {
+            flex-grow: 1;
+            background-color: transparent;
+            border: none;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            outline: none;
+        }
+        .output {
+            margin: 5px 0;
+            color: #ccc;
+        }
+        .error {
+            color: #f00;
+        }
+        .success {
+            color: #0f0;
+        }
+    </style>
+</head>
+<body>
+    <div id="terminal"></div>
+    <div id="input-line">
+        <span id="prompt">></span>
+        <input type="text" id="command-input" autofocus>
+    </div>
+    <script src="cli.js"></script>
+    <script>
+        const terminal = document.getElementById('terminal');
+        const input = document.getElementById('command-input');
+        
+        // Initialize CLI
+        terminal.innerHTML += 'Welcome to B2B Lead Scraper CLI\n';
+        terminal.innerHTML += 'Type "help" for available commands or "quit" to exit.\n\n';
+        
+        // Handle input
+        input.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                const command = this.value;
+                terminal.innerHTML += `> ${command}\n`;
+                processCommand(command);
+                this.value = '';
+                terminal.scrollTop = terminal.scrollHeight;
+            }
+        });
+
+        // Print to terminal
+        function print(text, type = 'output') {
+            terminal.innerHTML += `<div class="${type}">${text}</div>`;
+        }
+
+        // Process commands
+        async function processCommand(cmd) {
+            const [command, ...args] = cmd.trim().split(' ');
+
+            switch (command.toLowerCase()) {
+                case 'help':
+                    showHelp();
+                    break;
+                case 'status':
+                    await showStatus();
+                    break;
+                case 'export':
+                    await exportLeads(args[0]);
+                    break;
+                case 'clear':
+                    await clearData();
+                    break;
+                case 'quit':
+                case 'exit':
+                    window.close();
+                    break;
+                default:
+                    print('Unknown command. Type "help" for available commands.', 'error');
+            }
+        }
+
+        // Command implementations
+        function showHelp() {
+            print(`
+B2B Lead Scraper CLI
+===================
+
+Commands:
+  help                Show this help message
+  status             Show extension status and statistics
+  export [filename]  Export leads to CSV file
+  clear              Clear all stored leads
+  quit               Exit the CLI
+`);
+        }
+
+        async function showStatus() {
+            try {
+                const result = await chrome.storage.local.get(['isScrapingEnabled', 'leads', 'pagesScanned']);
+                print(`
+Extension Status
+===============
+Scraping: ${result.isScrapingEnabled ? 'Enabled' : 'Disabled'}
+Leads Collected: ${(result.leads || []).length}
+Pages Scanned: ${result.pagesScanned || 0}
+`, 'success');
+            } catch (error) {
+                print('Error getting status: ' + error.message, 'error');
+            }
+        }
+
+        async function exportLeads(filename = null) {
+            try {
+                const result = await chrome.storage.local.get(['leads']);
+                const leads = result.leads || [];
+                
+                if (leads.length === 0) {
+                    print('No leads to export.', 'error');
+                    return;
+                }
+
+                const defaultFilename = `leads_${new Date().toISOString().split('T')[0]}.csv`;
+                const csvContent = convertToCSV(leads);
+                
+                // Create download link
+                const blob = new Blob([csvContent], { type: 'text/csv' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = filename || defaultFilename;
+                
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+                
+                print(`Exported ${leads.length} leads to ${filename || defaultFilename}`, 'success');
+            } catch (error) {
+                print('Error exporting leads: ' + error.message, 'error');
+            }
+        }
+
+        function convertToCSV(leads) {
+            const headers = ['Name', 'Email', 'Phone', 'Company', 'Website', 'Source', 'Date'];
+            const rows = leads.map(lead => [
+                lead.name || '',
+                lead.email || '',
+                lead.phone || '',
+                lead.company || '',
+                lead.website || '',
+                lead.source || '',
+                lead.date || ''
+            ]);
+            
+            return [headers, ...rows]
+                .map(row => row.map(cell => `"${cell}"`).join(','))
+                .join('\n');
+        }
+
+        async function clearData() {
+            if (confirm('Are you sure you want to clear all leads? This cannot be undone.')) {
+                try {
+                    await chrome.storage.local.set({
+                        leads: [],
+                        pagesScanned: 0
+                    });
+                    print('All leads have been cleared.', 'success');
+                } catch (error) {
+                    print('Error clearing data: ' + error.message, 'error');
+                }
+            }
+        }
+    </script>
+</body>
+</html> 
